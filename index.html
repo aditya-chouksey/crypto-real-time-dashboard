@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Market Intelligence Hub | Multi-Asset Real-Time Engine</title>
+  
+  <!-- SEO & Social Meta for Portfolio Piece -->
+  <meta name="description" content="Sub-second high-frequency crypto intelligence dashboard powered by TypeScript, Tailwind CSS, Chart.js, and direct Binance WebSocket streams." />
+  <meta name="theme-color" content="#020617" />
+
+  <!-- Preconnect to high-frequency CDN origins for sub-second Core Web Vitals -->
+  <link rel="preconnect" href="https://stream.binance.com:9443" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- High-Tech Typography (Inter & JetBrains Mono) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              emerald: '#10b981',
+              cyan: '#06b6d4',
+              rose: '#f43f5e',
+              amber: '#f59e0b',
+            }
+          },
+          animation: {
+            'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN for high-performance canvas rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      contain: layout style paint;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500/30 selection:text-emerald-300">
+  
+  <!-- TOP AMBIENT GRADIENT BLUR BACKDROP -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-48 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-indigo-500/10 blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- MAIN WRAPPER -->
+  <div class="flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ==================================================================== -->
+    <!-- 1. TOP HEADER & ASSET SELECTOR BAR                                   -->
+    <!-- ==================================================================== -->
+    <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+      
+      <!-- Brand & Title -->
+      <div class="space-y-1">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 p-0.5 shadow-lg shadow-emerald-500/20">
+            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              Live Market Intelligence Hub
+              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">v1.2 TS Multi-Asset</span>
+            </h1>
+            <p class="text-xs text-slate-400 font-medium flex items-center gap-2">
+              <span id="header-subtext" class="text-slate-200 font-semibold">BTC / USDT</span>
+              <span class="text-slate-600">•</span>
+              <span>Sub-Second Binance WebSocket Stream</span>
+              <span class="text-slate-600">•</span>
+              <span class="font-mono text-emerald-400/90 text-[11px]">wss://stream.binance.com</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset Switcher Pills & Status Badge -->
+      <div class="flex flex-wrap items-center gap-3">
+        
+        <!-- Multi-Asset Switcher Pills -->
+        <div class="flex items-center p-1 bg-slate-900/90 rounded-xl border border-slate-800 backdrop-blur shadow-inner">
+          <button data-asset="BTC" class="px-3 py-1 rounded-lg text-xs font-bold transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/20">BTC</button>
+          <button data-asset="ETH" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">ETH</button>
+          <button data-asset="SOL" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">SOL</button>
+          <button data-asset="BNB" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">BNB</button>
+          <button data-asset="XRP" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">XRP</button>
+          <button data-asset="DOGE" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">DOGE</button>
+        </div>
+
+        <!-- Live Status Badge -->
+        <div id="status-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 backdrop-blur-md bg-amber-500/10 text-amber-400 border-amber-500/30">
+          <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="status-text">Connecting...</span>
+        </div>
+
+        <!-- Stream Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button id="btn-pause" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition shadow-sm active:scale-95" title="Pause/Resume live feed">
+            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Pause
+          </button>
+
+          <button id="btn-reconnect" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition shadow-sm active:scale-95" title="Reset and reconnect socket">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Reset
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ==================================================================== -->
+    <!-- 2. VALUE CARD (HERO SPOT PRICE & QUICK METRICS)                     -->
+    <!-- ==================================================================== -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- Primary Price Hero Card -->
+      <div class="lg:col-span-5 bg-gradient-to-b from-slate-900/90 to-slate-900/50 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+        
+        <!-- Dynamic Asset Watermark -->
+        <div id="asset-watermark" class="absolute -right-6 -bottom-6 text-slate-800/30 font-extrabold text-8xl font-mono select-none pointer-events-none transition-all duration-300">
+          BTC
+        </div>
+
+        <div class="relative z-10 space-y-4">
+          <!-- Top Row: Asset Label & Delta Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <span id="asset-name-label" class="text-xs uppercase font-bold tracking-wider text-slate-400 font-mono">Bitcoin Spot Index</span>
+            </div>
+            
+            <div id="price-delta-badge" class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-md border bg-slate-800/60 text-slate-400 border-slate-700">
+              Syncing...
+            </div>
+          </div>
+
+          <!-- Price Display (Large bold text with commas and dollar sign) -->
+          <div class="flex items-baseline gap-3">
+            <div class="flex items-center gap-2">
+              <div id="price-direction-icon" class="transition-transform duration-200">
+                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+                </svg>
+              </div>
+              <span id="live-price" class="text-4xl sm:text-5xl font-extrabold tracking-tight font-mono text-white transition-colors duration-200">
+                $00,000.00
+              </span>
+            </div>
+          </div>
+
+          <!-- Secondary Sub-Metrics inside Value Card -->
+          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/70 text-xs">
+            <div>
+              <span class="text-slate-500 block mb-0.5">Session High</span>
+              <span id="stat-high" class="font-mono font-semibold text-emerald-400">$0.00</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">Session Low</span>
+              <span id="stat-low" class="font-mono font-semibold text-rose-400">$0.00</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">Cumulative Vol</span>
+              <span id="stat-volume" class="font-mono font-semibold text-slate-300">$0</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">Last Size</span>
+              <span id="stat-last-size" class="font-mono font-semibold text-slate-300 truncate block">0.0000 BTC</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Live Stream Telemetry & Performance Gauges -->
+      <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+        
+        <!-- Metric 1: Stream Throughput -->
+        <div class="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700/80 transition">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-medium">Tick Frequency</span>
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <div>
+            <div id="stat-tick-rate" class="text-xl sm:text-2xl font-bold font-mono text-cyan-300">0 ticks/s</div>
+            <div class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Sub-second updates
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric 2: Memory Bound Guarantee -->
+        <div class="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700/80 transition">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-medium">Heap Ring Buffer</span>
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+          <div>
+            <div id="stat-memory-buffer" class="text-sm font-bold font-mono text-emerald-400">0 / 15 points</div>
+            <div class="text-[11px] text-slate-500 mt-1">O(1) memory bound via .shift()</div>
+          </div>
+        </div>
+
+        <!-- Metric 3: Render Mode Optimization -->
+        <div class="col-span-2 sm:col-span-1 bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700/80 transition">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-medium">Canvas Optimization</span>
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="text-sm font-bold font-mono text-indigo-300">chart.update('none')</div>
+            <div class="text-[11px] text-slate-500 mt-1">Zero CPU animation bypass</div>
+          </div>
+        </div>
+
+        <!-- Mini Trade Tape -->
+        <div class="col-span-2 sm:col-span-3 bg-slate-900/40 border border-slate-800/60 rounded-xl p-3">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2 px-1">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Real-Time Trade Order Tape (Taker Execution)
+            </span>
+            <span class="text-[11px] text-slate-500 font-mono">Live Ingestion</span>
+          </div>
+          <div id="trade-tape" class="space-y-1 overflow-hidden min-h-[105px]">
+            <div class="text-center py-5 text-xs text-slate-500 font-mono">Waiting for trade ticks from Binance WebSocket...</div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- 3. CHART CONTAINER (REAL-TIME LINE CHART)                            -->
+    <!-- ==================================================================== -->
+    <section class="bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800/60">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            Real-Time Spot Price Velocity
+            <span class="text-[11px] font-normal text-slate-400">| Max 15 Live Window Ticks</span>
+          </h2>
+          <p class="text-xs text-slate-400">Tracks instant price variations with sub-second temporal precision and zero-layout reflow.</p>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs font-mono">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-0.5 bg-emerald-500 rounded-full"></span>
+            <span class="text-slate-300">Uptick / Neutral</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-0.5 bg-rose-500 rounded-full"></span>
+            <span class="text-slate-300">Downtick</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full h-80 sm:h-96 relative canvas-container">
+        <canvas id="crypto-chart"></canvas>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between pt-2 border-t border-slate-800/60 text-[11px] text-slate-500 gap-2">
+        <div class="flex items-center gap-3">
+          <span>X-Axis: Real-Time UTC Timestamp (HH:mm:ss)</span>
+          <span>•</span>
+          <span>Y-Axis: Spot Execution Price</span>
+        </div>
+        <div class="font-mono text-emerald-400/90">
+          Render Engine: Chart.js Canvas • Mode: Zero-Interpolation
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- 4. ENGINEERING ARCHITECTURE & INTERVIEW SPOTLIGHT                    -->
+    <!-- ==================================================================== -->
+    <section class="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('architecture-drawer').classList.toggle('hidden')">
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
+          <h3 class="text-sm font-bold text-slate-200">Associate Frontend Developer Architectural Dossier</h3>
+        </div>
+        <span class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Toggle Engineering Notes ▾</span>
+      </div>
+
+      <div id="architecture-drawer" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-800/60 text-xs">
+        
+        <div class="space-y-1.5 bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/40">
+          <h4 class="font-semibold text-emerald-400 flex items-center gap-1.5">
+            <span>1.</span> Autonomous WebSocket Lifecycle
+          </h4>
+          <p class="text-slate-400 leading-relaxed">
+            Multi-stream support across <code class="text-slate-300">BTC</code>, <code class="text-slate-300">ETH</code>, <code class="text-slate-300">SOL</code>, <code class="text-slate-300">BNB</code>, <code class="text-slate-300">XRP</code>, and <code class="text-slate-300">DOGE</code>. Clean lifecycle handling with socket teardown, exponential backoff, and port-443 fallback.
+          </p>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/40">
+          <h4 class="font-semibold text-cyan-400 flex items-center gap-1.5">
+            <span>2.</span> Garbage Collection & Memory Bounds
+          </h4>
+          <p class="text-slate-400 leading-relaxed">
+            Historical data array is strictly capped at 15 items using <code class="text-cyan-300">Array.shift()</code>. This enforces an $O(1)$ memory ceiling on the V8 heap, eliminating memory leakage and GC stutter under continuous high-frequency streams.
+          </p>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/40">
+          <h4 class="font-semibold text-indigo-400 flex items-center gap-1.5">
+            <span>3.</span> Canvas Optimization Trick
+          </h4>
+          <p class="text-slate-400 leading-relaxed">
+            Uses <code class="text-indigo-300">chart.update('none')</code> on every tick. This skips Chart.js's expensive easing animations, preventing CPU core saturation, layout reflows, and dropped frames during rapid bursts of trades.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-4 pb-2 text-center text-xs text-slate-600 font-medium">
+      Designed & Built for Product Studio Technical Review • Modern TypeScript & Tailwind CSS • Binance Public WebSocket Data
+    </footer>
+
+  </div>
+
+  <!-- Main Application Script (Compiled ES Module) -->
+  <script type="module" src="./dist/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "crypto-real-time-dash",
+  "version": "1.0.0",
+  "description": "High-Frequency Real-Time Crypto Intelligence Dashboard using TypeScript, Tailwind CSS, and Binance WebSocket",
+  "main": "dist/app.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "serve": "node serve.js"
+  },
+  "keywords": [
+    "crypto",
+    "websocket",
+    "typescript",
+    "chartjs",
+    "tailwind",
+    "binance"
+  ],
+  "author": "Associate Frontend Developer Candidate",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
