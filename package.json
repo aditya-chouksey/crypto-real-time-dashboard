@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "node build.js",
     "watch": "tsc --watch",
     "serve": "node serve.js"
   },
@@ -17,7 +17,7 @@
     "tailwind",
     "binance"
   ],
-  "author": "Associate Frontend Developer Candidate",
+  "author": "Aditya Chouksey",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
